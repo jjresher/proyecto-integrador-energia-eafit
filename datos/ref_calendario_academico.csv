@@ -1,0 +1,24 @@
+fecha_inicio,fecha_fin,periodo,semestre,fuente,nota
+2025-01-20,2025-04-13,clases,2025-1,estimado: fechas de 2026 trasladadas 52 semanas (mismo día de la semana),
+2025-04-14,2025-04-20,receso,2025-1,estimado: Semana Santa real de 2025,Semana Santa
+2025-04-21,2025-05-18,clases,2025-1,estimado: fechas de 2026 trasladadas 52 semanas (mismo día de la semana),
+2025-05-19,2025-05-31,evaluaciones_finales,2025-1,estimado: fechas de 2026 trasladadas 52 semanas (mismo día de la semana),
+2025-06-01,2025-07-13,intersemestral,2025,estimado: fechas de 2026 trasladadas 52 semanas (mismo día de la semana),Incluye cursos intersemestrales y descanso de profesores
+2025-07-14,2025-10-05,clases,2025-2,estimado: fechas de 2026 trasladadas 52 semanas (mismo día de la semana),Inicio confirmado por el consumo; incluye Jornadas Universitarias (29 sep a 5 oct)
+2025-10-06,2025-10-12,receso,2025-2,estimado: fechas de 2026 trasladadas 52 semanas (mismo día de la semana),Semana de receso
+2025-10-13,2025-11-09,clases,2025-2,estimado: fechas de 2026 trasladadas 52 semanas (mismo día de la semana),
+2025-11-10,2025-11-22,evaluaciones_finales,2025-2,estimado: fechas de 2026 trasladadas 52 semanas (mismo día de la semana),
+2025-11-23,2025-12-19,intersemestral,2025,estimado: fechas de 2026 trasladadas 52 semanas (mismo día de la semana),Primera semana: supletorios y balance académico
+2025-12-20,2026-01-12,vacaciones,2025,estimado: caída del consumo en los datos,"Vacaciones colectivas; el traslado daría 15 dic, los datos muestran la caída desde el 20 dic"
+2026-01-13,2026-01-18,intersemestral,2026,estimado: caída del consumo en los datos,
+2026-01-19,2026-03-29,clases,2026-1,oficial: cronograma EAFIT 2026,
+2026-03-30,2026-04-05,receso,2026-1,oficial: cronograma EAFIT 2026,Receso de Semana Santa
+2026-04-06,2026-05-18,clases,2026-1,oficial: cronograma EAFIT 2026,Clases oficiales hasta el 16 may; 17-18 may (fin de semana y festivo) se asignan a clases
+2026-05-19,2026-05-30,evaluaciones_finales,2026-1,oficial: cronograma EAFIT 2026,
+2026-05-31,2026-07-12,intersemestral,2026,oficial: cronograma EAFIT 2026,Cursos intersemestrales 16 jun a 3 jul; descanso de profesores 22 jun a 3 jul
+2026-07-13,2026-10-04,clases,2026-2,oficial: cronograma EAFIT 2026,Incluye Jornadas Universitarias (28 sep a 4 oct)
+2026-10-05,2026-10-11,receso,2026-2,oficial: cronograma EAFIT 2026,Semana de receso
+2026-10-12,2026-11-08,clases,2026-2,oficial: cronograma EAFIT 2026,Clases oficiales hasta el 7 nov
+2026-11-09,2026-11-21,evaluaciones_finales,2026-2,oficial: cronograma EAFIT 2026,
+2026-11-22,2026-12-13,intersemestral,2026,oficial: cronograma EAFIT 2026,
+2026-12-14,2027-01-11,vacaciones,2026,oficial: cronograma EAFIT 2026,Vacaciones colectivas (fin según comunicado de EAFIT)

@@ -1,0 +1,10 @@
+,test (retrospectivo)
+Subestación-días evaluados,747.0
+  de ellos con las 24 h medidas,726.0
+Alertas emitidas,15.0
+Alertas por semana (9 subestaciones),1.3
+"Subestación-días atípicos (regla 1,5×)",32.0
+  atípicos con alerta (detectados),6.0
+  % atípicos detectados (sensibilidad),18.8
+  % de las alertas que caen en día atípico (precisión),40.0
+  % de días normales con alerta,1.3

@@ -1,0 +1,116 @@
+{
+  "version": "v4",
+  "modelo": "LightGBM ajustado",
+  "creado": "2026-11-21T12:56:57",
+  "entrenado_hasta": "2026-10-22 23:00:00",
+  "fuente_datos": {
+    "consumo": "archivo ../datos/Subestaciones_15_abril_2025_-_22_oct_2026.xlsx",
+    "capacidad": "valores confirmados por la universidad (escritos en 3.1b)",
+    "demanda_total": "archivo ../datos/consumo_total.xlsx",
+    "clima": "archivo ../datos/clima_nasa_power_eafit.csv"
+  },
+  "categorias": {
+    "subestacion": [
+      "SUB1",
+      "SUB2",
+      "SUB3",
+      "SUB4",
+      "SUB5",
+      "SUB6",
+      "SUB7",
+      "SUB8",
+      "SUB9"
+    ],
+    "periodo": [
+      "clases",
+      "receso",
+      "intersemestral",
+      "cierre"
+    ]
+  },
+  "umbral_alerta_relativo": {
+    "SUB1": 0.7826697185031843,
+    "SUB2": 0.5119109161916409,
+    "SUB3": 0.5500127122989986,
+    "SUB4": 0.34013563265797603,
+    "SUB5": 1.0393892586303801,
+    "SUB6": 0.4953260495108174,
+    "SUB7": 0.35948968178719537,
+    "SUB8": 0.2860405672443692,
+    "SUB9": 1.604287085233948
+  },
+  "metricas_test": {
+    "WAPE_%": 9.315,
+    "MAE_kWh": 35.773,
+    "RMSE_kWh": 86.408,
+    "sesgo_%": -0.585,
+    "MASE": 0.479,
+    "elegido": "✅",
+    "filas": 17829.0
+  },
+  "params": {
+    "lgbm": {
+      "n_estimators": 400,
+      "learning_rate": 0.06587345536472146,
+      "num_leaves": 126,
+      "min_child_samples": 18,
+      "subsample": 0.54248555911114,
+      "colsample_bytree": 0.6812261325085811,
+      "reg_lambda": 0.010707791750527235,
+      "objective": "l1"
+    },
+    "rf": {
+      "min_samples_leaf": 5,
+      "max_features": 0.6
+    }
+  },
+  "versiones": {
+    "pandas": "3.0.5",
+    "numpy": "2.5.3",
+    "matplotlib": "3.11.2",
+    "seaborn": "0.13.2",
+    "scikit-learn": "1.9.1",
+    "lightgbm": "4.7.0",
+    "optuna": "5.1.0",
+    "shap": "0.54.1",
+    "holidays": "0.108",
+    "openpyxl": "3.1.5"
+  },
+  "componentes": [
+    {
+      "tipo": "lgbm",
+      "variables": [
+        "lag_24_rel",
+        "lag_48_rel",
+        "lag_168_rel",
+        "lag_336_rel",
+        "lag_mismo_tipo_rel",
+        "max_ayer_rel",
+        "prom_ult3h_ayer_rel",
+        "media_7d_misma_hora_rel",
+        "std_4sem_misma_hora_rel",
+        "total_ayer_rel",
+        "razon_24_168",
+        "nivel_7d",
+        "hora",
+        "hora_sin",
+        "hora_cos",
+        "dia_semana",
+        "dow_sin",
+        "dow_cos",
+        "mes",
+        "festivo",
+        "fin_semana",
+        "laboral",
+        "puente",
+        "ayer_laboral",
+        "hace7_laboral",
+        "dias_desde_mismo_tipo",
+        "semana_semestre",
+        "subestacion",
+        "periodo"
+      ],
+      "relativo": true
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+,WAPE_%,MAE_kWh,RMSE_kWh,sesgo_%,MASE,elegido,filas
+Seasonal naive (semana pasada),17.162,65.906,165.523,-0.057,0.882,,17829
+Mismo tipo de dia,17.449,67.008,171.224,0.033,0.86,,17829
+Ridge (lineal),14.064,54.009,113.682,0.157,0.693,,17829
+Random Forest ajustado,9.753,37.455,86.647,-0.163,0.5,,17829
+LightGBM ajustado,9.315,35.773,86.408,-0.585,0.479,✅,17829
+Ensamble LightGBM + RF,9.376,36.004,85.32,-0.374,0.481,,17829

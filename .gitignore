@@ -1,0 +1,19 @@
+# Credenciales de Databricks: nunca se suben
+.env
+**/.env
+
+# Datos de la Universidad EAFIT: el repositorio es público, así que no se suben (ver datos/README.md)
+datos/*.xlsx
+datos/*.xls
+datos/**/*.xlsx
+
+# Archivos temporales
+.ipynb_checkpoints/
+__pycache__/
+.DS_Store
+mlruns/
+mlartifacts/
+
+# Archivo privado del equipo: alias de subestaciones, capacidades y factor de escala
+datos/privado.json
+*privado*.json
