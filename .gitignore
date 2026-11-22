@@ -17,3 +17,6 @@ mlartifacts/
 # Archivo privado del equipo: alias de subestaciones, capacidades y factor de escala
 datos/privado.json
 *privado*.json
+
+# Entorno virtual de Python
+.venv/

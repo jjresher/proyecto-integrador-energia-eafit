@@ -51,7 +51,7 @@ flowchart LR
     end
     M[Notebook del modelo<br/>limpieza causal, LightGBM,<br/>validación walk-forward]
     F[(Modelo versionado<br/>.joblib + MLflow)]
-    API[API de pronóstico<br/>pendiente]
+    API[API de pronóstico<br/>FastAPI, local]
     T[Tablero]
 
     A1 & A2 & A3 & A4 & A5 --> V --> B --> S --> G
@@ -83,7 +83,7 @@ Más detalle en [`docs/arquitectura.md`](docs/arquitectura.md).
 | Hallazgos con gráficos | ✅ Listo | [`docs/hallazgos/`](docs/hallazgos/) |
 | Resultados del modelo → tablas Gold (`04_resultados`) | ✅ Listo | [`databricks/04_resultados.py`](databricks/04_resultados.py) |
 | Job que encadena los notebooks | ⏳ Pendiente de subir | [`databricks/jobs/`](databricks/jobs/) |
-| API del modelo | ⏳ Pendiente | [`api/`](api/) |
+| API del modelo | ✅ Lista: FastAPI con 3 servicios y prueba funcional (corre en local con el modelo y los datos del equipo) | [`api/`](api/) |
 | Tablero | ⏳ Pendiente de subir | [`tablero/`](tablero/) |
 | Presentación | ⏳ Pendiente | [`docs/presentacion/`](docs/presentacion/) |
 
