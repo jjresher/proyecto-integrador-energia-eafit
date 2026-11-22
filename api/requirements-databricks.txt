@@ -1,0 +1,4 @@
+# Solo para leer de Databricks (tablas Silver y Gold vía SQL Warehouse). Sin esto, la API usa los archivos locales.
+-r requirements.txt
+databricks-sql-connector>=3.0
+# databricks-sdk>=0.30      # solo si la API corre como Databricks App (sin token)

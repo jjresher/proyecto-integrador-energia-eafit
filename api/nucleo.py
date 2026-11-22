@@ -16,6 +16,8 @@ import joblib
 import numpy as np
 import pandas as pd
 
+from api import fuentes
+
 # El notebook calcula promedios sobre horas sin dato: el resultado correcto es NaN y el aviso no aporta
 warnings.filterwarnings("ignore", message="Mean of empty slice", category=RuntimeWarning)
 warnings.filterwarnings("ignore", message="Degrees of freedom <= 0 for slice", category=RuntimeWarning)
@@ -27,6 +29,9 @@ RUTAS = {   # variable de entorno -> (descripción, valor por defecto relativo a
     "RUTA_CLIMA": ("los datos de clima", "datos/clima_nasa_power_eafit.csv"),
     "RUTA_PRIVADO": ("la configuración confidencial", "datos/privado.json"),
 }
+OPCIONALES = {   # respaldo del pronóstico emitido cuando no se puede leer la tabla Gold
+    "RUTA_PRONOSTICO": ("el pronóstico emitido (respaldo de Gold)", "modelo/resultados/pronostico_2026-10-23.csv"),
+}
 
 
 class ArchivoFaltante(RuntimeError):
@@ -34,7 +39,7 @@ class ArchivoFaltante(RuntimeError):
 
 
 def ruta_de(variable):
-    ruta = Path(os.environ.get(variable) or RUTAS[variable][1])
+    ruta = Path(os.environ.get(variable) or {**RUTAS, **OPCIONALES}[variable][1])
     return ruta if ruta.is_absolute() else RAIZ / ruta
 
 
@@ -135,10 +140,12 @@ class Contexto:
     limpio: pd.DataFrame         # el mismo consumo después de la limpieza causal
     clima: pd.DataFrame
     clima_d: pd.DataFrame
-    subestaciones: list          # nombres tomados de las hojas del Excel
+    subestaciones: list          # nombres tomados de los datos
     capacidad: dict              # kVA por subestación (privado.json)
     tarifas: dict                # COP/kWh por mes "AAAA-MM" (privado.json)
     reglas: dict                 # subestaciones con reglas especiales de limpieza (privado.json)
+    emitido: pd.DataFrame | None  # pronóstico que el Job guardó en Gold (o su respaldo CSV)
+    fuente: dict                 # de dónde salió cada dato
 
     @property
     def ultimo_dato(self):
@@ -148,25 +155,82 @@ class Contexto:
         return ts.dt.strftime("%Y-%m").map(self.tarifas)
 
 
+def _faltante(variable):
+    que = {**RUTAS, **OPCIONALES}[variable][0]
+    return ArchivoFaltante(
+        f"La API no puede arrancar: falta {que} ({ruta_de(variable)}). Ese archivo no se publica y solo lo "
+        f"tiene el equipo del proyecto. Cópielo en esa ruta o indique otra con la variable {variable}.")
+
+
 def cargar_contexto():
-    """Carga modelo, datos y configuración. Se llama una sola vez, al arrancar la API."""
-    for variable, (que, _) in RUTAS.items():
+    """Carga modelo, datos y configuración. Se llama al arrancar la API y en /recargar.
+
+    Datos: de Databricks (Silver y Gold, vía SQL Warehouse) si hay credenciales; si no, o si Databricks no responde,
+    de los archivos locales. FUENTE_DATOS=databricks obliga a usar Databricks; FUENTE_DATOS=local, los archivos.
+    """
+    fuentes.cargar_env(RAIZ)
+    modo = fuentes.modo()
+    for variable in ("RUTA_MODELO", "RUTA_PRIVADO"):
         if not ruta_de(variable).is_file():
-            raise ArchivoFaltante(
-                f"La API no puede arrancar: falta {que} ({ruta_de(variable)}). Ese archivo no se publica y solo lo "
-                f"tiene el equipo del proyecto. Cópielo en esa ruta o indique otra con la variable {variable}.")
+            raise _faltante(variable)
     privado = json.loads(ruta_de("RUTA_PRIVADO").read_text(encoding="utf-8"))
     for clave in ("capacidad_kva", "tarifa_cop_kwh", "reglas_limpieza"):
         if clave not in privado:
             raise ArchivoFaltante(f"La API no puede arrancar: a {ruta_de('RUTA_PRIVADO')} le falta la clave '{clave}'. "
                                   "La versión completa de ese archivo solo la tiene el equipo del proyecto.")
-    crudo = ancho_desde_largo(cargar_subestaciones(ruta_de("RUTA_CONSUMO")))
-    clima = cargar_clima(ruta_de("RUTA_CLIMA"))
+    artefacto = joblib.load(ruta_de("RUTA_MODELO"))
+    subs_modelo = list(artefacto["categorias"]["subestacion"])
+    fuente, avisos = {}, []
+
+    # 1) Consumo y clima: Databricks primero (si corresponde), archivos como respaldo
+    crudo = clima = None
+    if modo != "local" and fuentes.hay_credenciales():
+        try:
+            crudo = ancho_desde_largo(fuentes.consumo_databricks(subs_modelo, FIN_DATOS))
+            clima = fuentes.clima_databricks().mask(lambda c: c <= -999)
+            tabla = f"{fuentes.CATALOGO}.{fuentes.ESQUEMA}"
+            fuente["consumo"] = f"Databricks · {tabla}.{fuentes.TABLAS['consumo']} (SQL Warehouse)"
+            fuente["clima"] = f"Databricks · {tabla}.{fuentes.TABLAS['clima']} (SQL Warehouse)"
+        except Exception as e:                                       # noqa: BLE001 - se informa y se usa el respaldo
+            if modo == "databricks":
+                raise fuentes.SinDatabricks(f"FUENTE_DATOS=databricks, pero no se pudo leer de Databricks: "
+                                            f"{type(e).__name__}: {e}") from e
+            crudo = clima = None
+            avisos.append(f"Databricks no respondió ({type(e).__name__}); se usan los archivos locales.")
+    elif modo == "databricks":
+        raise fuentes.SinDatabricks("FUENTE_DATOS=databricks, pero faltan las credenciales (DATABRICKS_HOST, "
+                                    "DATABRICKS_HTTP_PATH y DATABRICKS_TOKEN en un archivo .env).")
+    if crudo is None:
+        for variable in ("RUTA_CONSUMO", "RUTA_CLIMA"):
+            if not ruta_de(variable).is_file():
+                raise _faltante(variable)
+        crudo = ancho_desde_largo(cargar_subestaciones(ruta_de("RUTA_CONSUMO")))
+        clima = cargar_clima(ruta_de("RUTA_CLIMA"))
+        fuente["consumo"] = "archivo local (respaldo sin conexión)"
+        fuente["clima"] = "archivo local (respaldo sin conexión)"
+
+    # 2) Pronóstico emitido por el Job: tabla Gold, o el CSV de respaldo
+    emitido = None
+    if fuente["consumo"].startswith("Databricks"):
+        try:
+            emitido = fuentes.emitido_databricks()
+            fuente["emitido"] = (f"Databricks · {fuentes.CATALOGO}.{fuentes.ESQUEMA}.{fuentes.TABLAS['emitido']} "
+                                 "(SQL Warehouse)")
+        except Exception as e:                                       # noqa: BLE001
+            avisos.append(f"No se pudo leer {fuentes.TABLAS['emitido']} ({type(e).__name__}); se usa el CSV de respaldo.")
+    if emitido is None and ruta_de("RUTA_PRONOSTICO").is_file():
+        emitido = fuentes.normalizar_emitido(pd.read_csv(ruta_de("RUTA_PRONOSTICO")))
+        fuente["emitido"] = "archivo local (respaldo de la tabla Gold)"
+    if emitido is None:
+        fuente["emitido"] = "no disponible"
+    if avisos:
+        fuente["avisos"] = " ".join(avisos)
+
     capacidad, reglas = privado["capacidad_kva"], privado["reglas_limpieza"]
-    return Contexto(artefacto=joblib.load(ruta_de("RUTA_MODELO")), crudo=crudo,
+    return Contexto(artefacto=artefacto, crudo=crudo,
                     limpio=limpiar_series(crudo, capacidad, reglas)[0], clima=clima, clima_d=clima_diario(clima),
                     subestaciones=list(crudo.columns), capacidad=capacidad, tarifas=privado["tarifa_cop_kwh"],
-                    reglas=reglas)
+                    reglas=reglas, emitido=emitido, fuente=fuente)
 
 
 # ---- Celda 24: limpieza causal R1-R4 ---------------------------------------------------------------
