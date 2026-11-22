@@ -1,0 +1,2 @@
+Archivos de Swagger UI 5.17.14 (paquete npm swagger-ui-dist, licencia Apache 2.0 en LICENSE).
+Se incluyen para que la página /docs de la API funcione sin internet.

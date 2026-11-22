@@ -46,7 +46,8 @@ pip install -r api/requirements.txt
 uvicorn api.main:app --reload
 ```
 
-Documentación interactiva (Swagger): <http://127.0.0.1:8000/docs>
+Documentación interactiva (Swagger): <http://127.0.0.1:8000/docs> (la dirección principal lleva ahí). Funciona sin internet:
+los archivos de Swagger UI están en `docs_estaticos/`.
 
 | Endpoint | Qué devuelve |
 |---|---|

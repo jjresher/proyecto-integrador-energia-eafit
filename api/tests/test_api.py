@@ -62,8 +62,8 @@ def test_pronostico_igual_al_del_notebook(respuesta):
 
 def test_resumen(respuesta):
     df, resumen = pd.DataFrame(respuesta["pronostico"]), respuesta["resumen"]
-    assert resumen["total_kwh"] == pytest.approx(df.pronostico_kwh.sum())
-    assert resumen["costo_total_cop"] == pytest.approx(df.costo_cop.sum())
+    assert resumen["total_kwh"] == pytest.approx(df.pronostico_kwh.sum(), abs=0.05)       # redondeado a 0,1 kWh
+    assert resumen["costo_total_cop"] == pytest.approx(df.costo_cop.sum(), abs=0.5)       # redondeado al peso
     assert resumen["horas_sobre_banda"] is None            # ese día todavía no tiene consumo real
 
 
@@ -82,6 +82,13 @@ def test_fecha_fuera_de_rango(cliente, fecha, texto):
     r = cliente.post("/pronostico", json={"fecha": fecha})
     assert r.status_code == 422
     assert texto in r.json()["detail"]
+
+
+def test_documentacion_sin_internet(cliente):
+    assert cliente.get("/", follow_redirects=False).headers["location"] == "/docs"
+    html = cliente.get("/docs").text
+    assert "cdn.jsdelivr.net" not in html, "la página /docs no debe depender de internet"
+    assert cliente.get("/archivos-docs/swagger-ui-bundle.js").status_code == 200
 
 
 def test_fecha_mal_escrita(cliente):

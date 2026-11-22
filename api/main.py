@@ -3,11 +3,19 @@ import datetime as dt
 import logging
 import math
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
 from api import nucleo
+
+# Archivos de Swagger UI guardados en el repositorio: /docs funciona sin internet (p. ej. en la sustentación)
+DOCS_ESTATICOS = Path(__file__).resolve().parent / "docs_estaticos"
+swagger_ui_path = DOCS_ESTATICOS if (DOCS_ESTATICOS / "swagger-ui-bundle.js").is_file() else None
 
 log = logging.getLogger("uvicorn.error")
 
@@ -27,12 +35,30 @@ app = FastAPI(
     title="API de pronóstico de energía",
     version="1.0.0",
     lifespan=ciclo_de_vida,
+    docs_url=None if swagger_ui_path else "/docs",
+    redoc_url=None,
     description="Pronóstico **horario** de la energía comprada a la red por 9 subestaciones de un campus universitario, "
                 "emitido a las 00:00 de cada día solo con datos hasta las 23:00 del día anterior.\n\n"
                 "Proyecto integrador · SI7006, despliegue de modelos y consumo.",
     openapi_tags=[{"name": "Estado", "description": "Disponibilidad de la API y ficha del modelo."},
                   {"name": "Pronóstico", "description": "Pronóstico de un día para todas las subestaciones."}],
 )
+
+
+if swagger_ui_path:
+    app.mount("/archivos-docs", StaticFiles(directory=swagger_ui_path), name="archivos-docs")
+
+    @app.get("/docs", include_in_schema=False)
+    def documentacion():
+        return get_swagger_ui_html(openapi_url=app.openapi_url, title=app.title + " · documentación",
+                                   swagger_js_url="/archivos-docs/swagger-ui-bundle.js",
+                                   swagger_css_url="/archivos-docs/swagger-ui.css",
+                                   swagger_favicon_url="/archivos-docs/favicon-32x32.png")
+
+
+@app.get("/", include_in_schema=False)
+def inicio():
+    return RedirectResponse(url="/docs")
 
 
 class Salud(BaseModel):
@@ -116,8 +142,8 @@ def pronostico(solicitud: SolicitudPronostico, request: Request):
     real = filas[["timestamp", "subestacion"]].astype({"subestacion": str}).join(real, on=["timestamp", "subestacion"]).real
     con_dato = int(real.notna().sum())
     return {
-        "resumen": {"fecha": solicitud.fecha, "filas": len(filas), "total_kwh": filas.pronostico_kwh.sum(),
-                    "costo_total_cop": filas.costo_cop.sum(), "horas_con_dato_real": con_dato,
+        "resumen": {"fecha": solicitud.fecha, "filas": len(filas), "total_kwh": round(float(filas.pronostico_kwh.sum()), 1),
+                    "costo_total_cop": round(float(filas.costo_cop.sum())), "horas_con_dato_real": con_dato,
                     "horas_sobre_banda": int((real > filas.banda_alerta_kwh).sum()) if con_dato else None},
         "pronostico": filas[["timestamp", "subestacion", "pronostico_kwh", "banda_alerta_kwh",
                              "costo_cop"]].to_dict("records"),
