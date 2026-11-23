@@ -1,40 +1,28 @@
 # Databricks: pipeline Medallion (SI7006)
 
-Catálogo y esquema: `workspace.eafit_energia` (Databricks Free Edition, cómputo *serverless*).
+Catálogo y esquema: `workspace.eafit_energia` (Databricks Free Edition, cómputo *serverless*, tablas Delta en Unity Catalog).
+Los archivos originales llegan a Volumes (`landing` → `procesados` o `cuarentena`) y cada capa escribe sus tablas con un
+registro de filas y tiempos en `pipeline_metricas`.
 
-## Notebooks
+> 🌐 En este repositorio público los notebooks tienen los códigos de las subestaciones anonimizados (SUB1 a SUB9) y
+> no incluyen la relación subestación ↔ catálogo de transformadores. La versión ejecutable está en el repositorio privado.
 
-| Orden | Notebook | Qué hace | Estado |
+## Notebooks (en el orden del Job)
+
+| Orden | Notebook | Lee | Escribe |
 |---|---|---|---|
-| 1 | `01_bronze` | Ingesta de los archivos del Volume a tablas Bronze, sin transformar | ⏳ Lo sube el equipo |
-| 2 | `02_silver` | Tipos, una lectura por hora, marcas de calidad, conciliación | ⏳ Lo sube el equipo |
-| 3 | `03_gold` | Tablas de análisis para el tablero | ⏳ Lo sube el equipo |
-| 4 | [`04_resultados.py`](04_resultados.py) | Carga los resultados del modelo (CSV y `.joblib` del Volume) a tablas Gold y registra las versiones del modelo | ✅ Listo |
+| 1 | [`01_bronze.py`](01_bronze.py) | Excel y CSV del Volume `landing`; clima de la API de NASA POWER | `bronze_catalogo_fuentes`, `bronze_*_raw` (consumo, resumen, catálogo, demanda, clima, calendario) y `bronze_ingesta_log`. Todo como texto, tal como llega; mueve cada archivo a `procesados` o `cuarentena` |
+| 2 | [`02_silver.py`](02_silver.py) | Bronze | `silver_mapeo_subestaciones`, `silver_consumo` (malla horaria completa, valor original `kwh`, `kwh_limpio` y causa de invalidez), `silver_demanda_total`, `silver_demanda_conciliacion`, `silver_clima` |
+| 3 | [`03_gold.py`](03_gold.py) | Silver | `dim_calendario`, `gold_modelo_horario`, `gold_consumo_diario`, `gold_perfil_hora_dia`, `gold_conciliacion_total` |
+| 4 | [`04_resultados.py`](04_resultados.py) | Resultados del modelo en el Volume (CSV y `.joblib`) | `gold_pronostico_emitido`, `gold_real_vs_pronostico`, `gold_metricas_test`, `gold_ranking_validacion`, `gold_alertas_*`, `gold_umbrales_alerta`, `gold_registro_limpieza`, `gold_modelos`, más el registro en MLflow |
 
-Formato: los notebooks se guardan como **archivo fuente de Databricks** (`.py`, se exportan con *File → Export → Source file*)
-o como `.ipynb`. Los dos se importan de nuevo con *Workspace → Import*.
+El modelo se entrena en el notebook de [`modelo/`](../modelo/); `04_resultados` publica sus resultados en Gold y comprueba en
+Spark que el error coincide con el del notebook (WAPE 9,315 %). La [API](../api/) y el tablero consumen esas tablas.
 
-## `04_resultados`
-
-- **Entrada:** la carpeta del modelo en el Volume (widget `ruta_modelo`, por defecto
-  `/Volumes/workspace/eafit_energia/bronze/modelo`), con `resultados/*.csv` y `modelos/*.joblib`. Si el notebook del modelo
-  corrió dentro de Databricks, ya los dejó ahí.
-- **Salida:** las tablas `gold_*` descritas en [`docs/arquitectura.md`](../docs/arquitectura.md#tablas-gold-que-produce-04_resultados).
-- **Verificación:** recalcula en Spark el error del modelo y comprueba que coincide con el reportado por el notebook (WAPE 9,315 %).
+Formato: archivo fuente de Databricks (`.py`, *File → Export → Source file*). Se importan con *Workspace → Import*.
 
 ## Job
 
-La definición del Job que encadena 01 → 02 → 03 → 04 va en [`jobs/`](jobs/).
-
-## Tablas del pipeline
-
-*(Se completa cuando el equipo suba sus notebooks: nombre, capa, contenido y número de filas de cada tabla.)*
-
-El notebook del modelo espera estas tablas de Silver (los nombres se ajustan en su celda 2.1 si son otros):
-
-| Tabla | Columnas que usa el modelo |
-|---|---|
-| `silver_consumo` | marca de tiempo, `subestacion`, `kwh_original`, marca de calidad |
-| `silver_clima` | marca de tiempo, `T2M`, `PRECTOTCORR`, `ALLSKY_SFC_SW_DWN` |
-| `silver_demanda_total` | marca de tiempo, `kwh_original` |
-| `silver_dim_subestacion` | `subestacion`, `capacidad_kva` |
+`pipeline_energia_eafit`: cuatro tareas encadenadas (01 → 02 → 03 → 04), programado a las 00:00 (America/Bogota) y en pausa
+para cuidar la cuota de la Free Edition. Corrida de referencia: 4 min 16 s, 1.300.169 filas leídas y 334.144 escritas. Ver
+[`jobs/`](jobs/).

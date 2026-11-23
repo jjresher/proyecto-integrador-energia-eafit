@@ -78,13 +78,13 @@ Más detalle en [`docs/arquitectura.md`](docs/arquitectura.md).
 
 | Parte | Estado | Dónde |
 |---|---|---|
-| Notebooks Bronze, Silver y Gold | ✅ Corriendo en Databricks · ⏳ falta subirlos al repositorio | [`databricks/`](databricks/) |
+| Notebooks Bronze, Silver y Gold | ✅ Corren en Databricks y están en el repositorio | [`databricks/`](databricks/) |
 | Modelo de pronóstico (v4, lee de Databricks) | ✅ Listo | [`modelo/`](modelo/) |
 | Hallazgos con gráficos | ✅ Listo | [`docs/hallazgos/`](docs/hallazgos/) |
 | Resultados del modelo → tablas Gold (`04_resultados`) | ✅ Listo | [`databricks/04_resultados.py`](databricks/04_resultados.py) |
-| Job que encadena los notebooks | ⏳ Pendiente de subir | [`databricks/jobs/`](databricks/jobs/) |
+| Job que encadena los notebooks | ✅ Corre en Databricks (4 tareas, 4 min 16 s) · ⏳ falta su definición en JSON | [`databricks/jobs/`](databricks/jobs/) |
 | API del modelo | ✅ Lista: FastAPI que calcula el pronóstico de cualquier día y consulta el emitido en Gold; lee de Databricks (Silver y Gold) con respaldo local; 25 pruebas | [`api/`](api/) |
-| Tablero | ⏳ Pendiente de subir | [`tablero/`](tablero/) |
+| Tablero | ✅ Power BI, 6 páginas (pregunta principal + 5 preguntas) | [`tablero/`](tablero/) |
 | Presentación | ⏳ Pendiente | [`docs/presentacion/`](docs/presentacion/) |
 
 ## Estructura del repositorio
