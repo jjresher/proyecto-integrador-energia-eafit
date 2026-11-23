@@ -24,5 +24,5 @@ Formato: archivo fuente de Databricks (`.py`, *File → Export → Source file*)
 ## Job
 
 `pipeline_energia_eafit`: cuatro tareas encadenadas (01 → 02 → 03 → 04), programado a las 00:00 (America/Bogota) y en pausa
-para cuidar la cuota de la Free Edition. Corrida de referencia: 4 min 16 s, 1.300.169 filas leídas y 334.144 escritas. Ver
+para cuidar la cuota de la Free Edition. Definición en [`jobs/pipeline_energia_eafit.json`](jobs/pipeline_energia_eafit.json). Corrida de referencia: 4 min 16 s, 1.300.169 filas leídas y 334.144 escritas. Ver
 [`jobs/`](jobs/).
