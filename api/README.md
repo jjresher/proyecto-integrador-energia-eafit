@@ -38,7 +38,7 @@ Tablas que usa (nombres y columnas aceptadas en `fuentes.py`):
 
 | Dato | Tabla |
 |---|---|
-| Consumo horario original | `workspace.eafit_energia.silver_consumo` (`kwh_original`) |
+| Consumo horario original | `workspace.eafit_energia.silver_consumo` (columna `kwh`, el valor original; nunca `kwh_limpio`) |
 | Clima horario | `workspace.eafit_energia.silver_clima` |
 | Pronóstico emitido por el Job | `workspace.eafit_energia.gold_pronostico_emitido` |
 

@@ -21,11 +21,13 @@ def tablas_simuladas(guardado):
         return ts.dt.tz_localize("UTC") if guardado == "reloj" else ts.dt.tz_localize("America/Bogota").dt.tz_convert("UTC")
 
     largo = nucleo.cargar_subestaciones(nucleo.ruta_de("RUTA_CONSUMO"))
-    consumo = pd.DataFrame({"ts": con_zona(largo.timestamp), "subestacion": "SUB_" + largo.subestacion,
-                            "kwh_original": largo.kwh, "kwh_limpio": -1.0, "flag_calidad": "ok"})
+    # Mismas columnas que escribe 02_silver: «kwh» es el valor original y «kwh_limpio» el limpio (no se debe usar)
+    consumo = pd.DataFrame({"subestacion": largo.subestacion, "ts": con_zona(largo.timestamp),
+                            "fecha": largo.timestamp.dt.date, "hora": largo.timestamp.dt.hour, "kwh": largo.kwh,
+                            "kwh_limpio": -1.0, "causa_invalido": None})
     clima_csv = pd.read_csv(nucleo.ruta_de("RUTA_CLIMA"))
-    clima = pd.DataFrame({"timestamp": con_zona(clima_csv.timestamp), "temperatura": clima_csv.T2M,
-                          "precipitacion": clima_csv.PRECTOTCORR, "radiacion": clima_csv.ALLSKY_SFC_SW_DWN})
+    clima = pd.DataFrame({"ts": con_zona(clima_csv.timestamp), "t2m": clima_csv.T2M,
+                          "prectotcorr": clima_csv.PRECTOTCORR, "allsky_sfc_sw_dwn": clima_csv.ALLSKY_SFC_SW_DWN})
     emitido_csv = pd.read_csv(nucleo.ruta_de("RUTA_PRONOSTICO"))
     emitido = emitido_csv.assign(timestamp=pd.to_datetime(emitido_csv.timestamp).dt.tz_localize("America/Bogota")
                                  .dt.tz_convert("UTC"))

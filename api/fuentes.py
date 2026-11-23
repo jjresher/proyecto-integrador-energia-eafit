@@ -25,7 +25,8 @@ COLUMNAS = {
     "fecha": ["fecha", "dia"],
     "hora": ["hora"],
     "subestacion": ["subestacion", "codigo_subestacion", "id_subestacion"],
-    "kwh_original": ["kwh_original", "kwh_crudo", "kwh_raw", "valor_original"],   # nunca la columna limpia
+    # Valor ORIGINAL, nunca la columna limpia. En silver_consumo del equipo se llama «kwh» (y la limpia «kwh_limpio»)
+    "kwh_original": ["kwh_original", "kwh_crudo", "kwh_raw", "valor_original", "kwh"],
     "T2M": ["T2M", "temperatura", "temperatura_c", "temp_c"],
     "PRECTOTCORR": ["PRECTOTCORR", "precipitacion", "precipitacion_mm", "precip_mm"],
     "ALLSKY_SFC_SW_DWN": ["ALLSKY_SFC_SW_DWN", "radiacion", "radiacion_ghi", "ghi"],
