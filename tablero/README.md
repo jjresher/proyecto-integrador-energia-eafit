@@ -3,14 +3,15 @@
 Tablero en **Power BI**, «Energía EAFIT», con las 9 subestaciones (SUB1 a SUB9, cada una con su bloque) y un filtro por
 subestación. Cada página responde una pregunta, en orden, y la responde en su primera tarjeta («Respuesta»):
 
-| Página | Pregunta que responde |
-|---|---|
-| Pregunta principal | ¿Conviene adoptar el pronóstico LightGBM? Error del modelo frente a la regla actual, error del presupuesto y valor |
-| 1 · Descriptiva | ¿Cuándo consume más energía el campus? |
-| 2 · Descriptiva | ¿Qué porcentaje falla el pronóstico en cada hora? |
-| 3 · Diagnóstica | ¿Dónde supera el error la meta del 10 %? |
-| 4 · Diagnóstica y negocio | ¿Cuánto mejora el presupuesto diario de energía? |
-| 5 · Predictiva | ¿Cuánta energía se espera el viernes 23-oct-2026? |
+| Pestaña | Tipo | Pregunta que responde |
+|---|---|---|
+| Resumen | Pregunta principal | ¿Conviene adoptar el pronóstico LightGBM? |
+| 1 · Contexto | Descriptiva | ¿Cuándo consume más energía el campus? |
+| 2 · Precisión | Descriptiva | ¿Qué porcentaje falla el pronóstico en cada hora? |
+| 3 · Dónde falla | Diagnóstica | ¿Dónde supera el error la meta del 10 %? |
+| 4 · Valor | Diagnóstica y negocio | ¿Cuánto mejora el presupuesto diario de energía? |
+| 5 · Mañana | Predictiva | ¿Cuánta energía se espera el viernes 23-oct-2026? |
+| Ficha de KPIs | Referencia | ¿Cómo se calcula cada indicador? |
 
 Las capturas de cada página muestran consumos reales y por eso están solo en el repositorio privado del equipo.
 
